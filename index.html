@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mod Yöneticisi</title>
+<style>
+:root{--bg:#f6f7f9;--panel:#fff;--text:#1d2330;--muted:#6b7280;--line:#e3e6ea;--accent:#c2410c;
+--g:#15803d;--gbg:#dcfce7;--b:#1d4ed8;--bbg:#dbeafe;--t:#0f766e;--tbg:#ccfbf1;--a:#a16207;--abg:#fef3c7;--r:#b91c1c;--rbg:#fee2e2;--n:#4b5563;--nbg:#e5e7eb;--p:#7e22ce;--pbg:#f3e8ff}
+@media (prefers-color-scheme:dark){:root{--bg:#14161b;--panel:#1c1f26;--text:#e6e8ec;--muted:#9aa1ad;--line:#2c313a;--accent:#fb923c;
+--g:#4ade80;--gbg:#14331f;--b:#93c5fd;--bbg:#172a4a;--t:#5eead4;--tbg:#0f302d;--a:#fcd34d;--abg:#3a2f0e;--r:#fca5a5;--rbg:#3d1717;--n:#cbd5e1;--nbg:#2a2f38;--p:#d8b4fe;--pbg:#2e1a45}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 "Segoe UI",system-ui,sans-serif;padding-bottom:230px}
+header{position:sticky;top:0;z-index:5;background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+h1{font-size:17px;margin:0 12px 0 0}
+h1 span{color:var(--accent)}
+button{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:6px;padding:4px 10px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+button:disabled{opacity:.4;cursor:default}
+input,select,textarea{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:6px;padding:4px 8px}
+.filters{display:flex;flex-wrap:wrap;gap:4px;padding:8px 16px}
+.filters button.on{background:var(--text);color:var(--panel);border-color:var(--text)}
+.filters button small{opacity:.7;margin-left:4px}
+.warn{margin:8px 16px 0;padding:8px 12px;border-radius:6px;background:var(--rbg);color:var(--r)}
+main{padding:0 16px}
+table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:12px;color:var(--muted);font-weight:600;background:var(--panel)}
+a{color:var(--b)}
+td.zipc{white-space:nowrap;font-size:12px}
+tr.row:hover td{background:color-mix(in srgb,var(--accent) 5%,transparent)}
+td.name{font-weight:600;cursor:pointer}
+td.name small{display:block;font-weight:400;color:var(--muted)}
+.deps{display:flex;flex-wrap:nowrap;gap:3px;max-width:240px;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,#000 85%,transparent);mask-image:linear-gradient(90deg,#000 85%,transparent)}
+.deps.short{-webkit-mask-image:none;mask-image:none}
+td.depc{cursor:help}
+.dep{font-size:11px;font-weight:500;padding:0 6px;border-radius:4px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.dep.req{color:var(--text)}
+.dep.conf{color:var(--r);border-color:var(--rbg)}
+.dep.bad{border-color:var(--accent);color:var(--accent)}
+td.chk{width:28px;text-align:center}
+tr.off td{opacity:.55}
+tr.off td.chk{opacity:1}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.s-yayinda{background:var(--gbg);color:var(--g)}.s-yayin_bekliyor{background:var(--bbg);color:var(--b)}.s-paketlenecek{background:var(--tbg);color:var(--t)}
+.s-test_bekliyor{background:var(--abg);color:var(--a)}.s-derleme_hatasi{background:var(--rbg);color:var(--r)}.s-derlenecek,.s-yeni{background:var(--pbg);color:var(--p)}
+.s-yayinlanmayacak,.s-kaynak_yok{background:var(--nbg);color:var(--n)}
+.upd{display:inline-block;margin-left:4px;font-size:11px;color:var(--accent);font-weight:600}
+.acts{display:flex;gap:4px;flex-wrap:wrap}
+.acts button{padding:2px 8px;font-size:12px}
+.muted{color:var(--muted)}
+.note{cursor:pointer;max-width:340px;color:var(--muted)}
+.note:hover{color:var(--text)}
+tr.detail td{background:var(--bg);font-size:12px}
+tr.detail pre{white-space:pre-wrap;margin:4px 0;font:12px Consolas,monospace}
+#log{position:fixed;left:0;right:0;bottom:0;height:210px;background:#0d1117;color:#c9d1d9;font:12px/1.45 Consolas,monospace;border-top:2px solid var(--accent);display:flex;flex-direction:column}
+#log .bar{display:flex;gap:10px;align-items:center;padding:4px 12px;background:#161b22;color:#8b949e}
+#log .bar b{color:#e6edf3}
+#log .lines{flex:1;overflow:auto;padding:4px 12px}
+#log .err{color:#ff7b72}#log .ok{color:#7ee787}#log .hd{color:#d2a8ff}
+dialog{border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);padding:18px;width:min(520px,92vw)}
+dialog label{display:block;margin:10px 0 4px;font-size:12px;color:var(--muted)}
+dialog input,dialog select,dialog textarea{width:100%}
+dialog .btns{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+#toast{position:fixed;right:16px;top:64px;z-index:9;display:flex;flex-direction:column;gap:6px}
+#toast div{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);padding:8px 12px;border-radius:6px;box-shadow:0 4px 14px #0002;max-width:420px}
+#toast div.e{border-left-color:var(--r)}
+@media (max-width:800px){.hide-s{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Mod <span>Yöneticisi</span></h1>
+  <input id="q" placeholder="Ara..." style="width:180px">
+  <button id="refresh">Yenile</button>
+  <button id="bulkBuild" title="Soldaki kutusu işaretli bütün modları derler">Seçilileri derle</button>
+  <button id="bulkPack" title="Kutusu işaretli, Çalışıyor ✓ olan ve değişen modları paketler; değişmeyenleri atlar">Seçilileri paketle</button>
+  <button id="add" class="pri">+ Mod ekle</button>
+  <span class="muted" id="sum" style="margin-left:auto"></span>
+</header>
+<div id="warn"></div>
+<div class="filters" id="filters"></div>
+<main><table><thead><tr><th class="chk" title="Toplu derle / paketle'ye dahil">Toplu</th><th>Mod</th><th>Sürüm</th><th>Durum</th><th class="hide-s">Gereksinimler</th><th class="hide-s">Zip</th><th class="hide-s">Nexus</th><th>İşlem</th><th class="hide-s">Not</th></tr></thead><tbody id="tb"></tbody></table></main>
+<div id="log"><div class="bar"><b>Günlük</b><span id="job"></span><span style="margin-left:auto;cursor:pointer" id="clr">temizle</span></div><div class="lines" id="lines"></div></div>
+<div id="toast"></div>
+
+<dialog id="dPub"><form method="dialog">
+  <h3 style="margin:0">Yayınlandı: <span id="pubName"></span></h3>
+  <label>Nexus URL</label><input id="pubUrl" placeholder="https://www.nexusmods.com/animeshopsimulator/mods/70" required>
+  <label>Nexus başlığı</label><input id="pubTitle">
+  <p class="muted" style="font-size:12px">Klasör Release'den Yayınlanan Modlar'a taşınır, NEXUS_YAYINLANANLAR.txt güncellenir.</p>
+  <div class="btns"><button value="no">Vazgeç</button><button value="ok" class="pri">Yayınlandı</button></div>
+</form></dialog>
+<dialog id="dAdd"><form method="dialog">
+  <h3 style="margin:0">Mod ekle</h3>
+  <label>ModDev\Mods klasörü</label><select id="addDir"></select>
+  <label>ya da kaynaksız paket (Release klasör adı)</label><input id="addPkg" placeholder="örn. CardStudio_CardPack6">
+  <label>Görünen ad</label><input id="addName" placeholder="boş bırakılırsa klasör adı">
+  <label>Not</label><input id="addNote">
+  <div class="btns"><button value="no">Vazgeç</button><button value="ok" class="pri">Ekle</button></div>
+</form></dialog>
+
+<script>
+const ST={yeni:'Yeni',derlenecek:'Derlenecek',derleme_hatasi:'Derleme hatası',test_bekliyor:'Test bekliyor',paketlenecek:'Paketlenecek',yayin_bekliyor:'Yayın bekliyor',yayinda:'Yayında',yayinlanmayacak:'Yayınlanmayacak',kaynak_yok:'Kaynak yok'};
+const FILTERS=[['yapilacak','Yapılacaklar',m=>!['yayinda','yayinlanmayacak'].includes(m.durum)],['tum','Tümü',()=>true],
+ ['derle','Derlenecek',m=>['yeni','derlenecek','derleme_hatasi'].includes(m.durum)],['test','Test bekliyor',m=>m.durum==='test_bekliyor'],
+ ['paket','Paketlenecek',m=>m.durum==='paketlenecek'],['yayin','Yayın bekliyor',m=>m.durum==='yayin_bekliyor'],
+ ['guncel','Güncellendi',m=>m.guncellendi],['yayinda','Yayında',m=>m.durum==='yayinda'],['skip','Yayınlanmayacak',m=>m.durum==='yayinlanmayacak'],['dep','Gereksinim uyarısı',m=>(m.gereksinimler||[]).some(d=>d.sorun&&d.tur==='gerekli')],['disi','Toplu dışı',m=>!m.toplu]];
+const DT={gerekli:'gerekli',onerilen:'önerilen',cakisir:'birlikte olmaz'};
+function depTitle(m){const g=m.gereksinimler||[];if(!g.length)return 'Gereksinim yok';return g.map(d=>`${DT[d.tur]}: ${d.ad}${d.min?' (en az '+d.min+')':''}${d.sorun?'  ⚠ '+d.sorun:''}`).join(String.fromCharCode(10))}
+function depChips(m){const g=m.gereksinimler||[];if(!g.length)return'';return '<div class="deps'+(g.length<=2?' short':'')+'">'+g.map(d=>{const c=d.tur==='cakisir'?'conf':d.tur==='gerekli'?'req':'';const bad=d.sorun&&d.tur!=='cakisir';return `<span class="dep ${c} ${bad?'bad':''}" title="${DT[d.tur]}${d.min?' (en az '+d.min+')':''}${d.sorun?' - '+esc(d.sorun):''}">${d.tur==='cakisir'?'≠ ':d.tur==='onerilen'?'+ ':''}${esc(d.ad)}${d.min?' ≥'+esc(d.min):''}${bad?' ⚠':''}</span>`}).join('')+'</div>'}
+let mods=[],filter=localGet('f')||'yapilacak',open=new Set(),gseq=0;
+function localGet(k){try{return localStorage.getItem('my_'+k)}catch{return null}}
+function localSet(k,v){try{localStorage.setItem('my_'+k,v)}catch{}}
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function tt(iso){if(!iso)return'';const d=new Date(iso),p=n=>String(n).padStart(2,'0');return `${p(d.getDate())}.${p(d.getMonth()+1)} ${p(d.getHours())}:${p(d.getMinutes())}`}
+function toast(t,e){const d=document.createElement('div');d.textContent=t;if(e)d.className='e';$('#toast').append(d);setTimeout(()=>d.remove(),e?9000:4000)}
+async function api(cmd,args={}){const r=await fetch('/api/run',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({cmd,args,by:'Mustafa'})}).then(r=>r.json());if(r.hata)throw new Error(r.hata);return r}
+async function load(){
+  try{const r=(await api('liste')).sonuc;mods=r.mods;
+    $('#warn').innerHTML=(r.oyunAcik?'<div class="warn">Oyun açık: derleme ve paketleme oyun kapanana kadar çalışmaz.</div>':'')+(r.eklenmemis&&r.eklenmemis.length?`<div class="warn" style="background:var(--abg);color:var(--a)">Listede olmayan ModDev/Mods klasörleri: <b>${r.eklenmemis.map(esc).join(', ')}</b> - eklemek için "+ Mod ekle".</div>`:'');
+    if(r.tasinan&&r.tasinan.length)toast('Taşındı: '+r.tasinan.join(', '));
+    render();}catch(e){toast(e.message,1)}
+}
+function render(){
+  const f=FILTERS.find(x=>x[0]===filter)||FILTERS[0],q=$('#q').value.trim().toLowerCase();
+  $('#filters').innerHTML=FILTERS.map(([k,l,fn])=>`<button data-f="${k}" class="${k===filter?'on':''}">${l}<small>${mods.filter(fn).length}</small></button>`).join('');
+  const list=mods.filter(f[2]).filter(m=>!q||(m.id+' '+m.ad+' '+(m.not||'')+' '+(m.nexus?.baslik||'')).toLowerCase().includes(q));
+  $('#sum').textContent=`${mods.length} mod · ${mods.filter(m=>m.durum==='yayinda').length} yayında · ${mods.filter(m=>m.durum==='yayin_bekliyor').length} yayın bekliyor`;
+  $('#tb').innerHTML=list.map(m=>{
+    const a=m.yapilabilir,b=[];
+    if(a.derle)b.push(`<button data-a="derle" data-id="${m.id}">Derle</button>`);
+    if(a.calisiyor)b.push(`<button data-a="calisiyor" data-id="${m.id}" title="Oyunda denedim, çalışıyor">Çalışıyor ✓</button>`);
+    else if(m.testEdildi&&!['yayinda','yayin_bekliyor'].includes(m.durum))b.push(`<button data-a="calismiyor" data-id="${m.id}" title="İşareti kaldır">✓ kaldır</button>`);
+    if(a.paketle)b.push(`<button data-a="paketle" data-id="${m.id}">Paketle</button>`);
+    if(m.yer)b.push(`<button data-a="acrel" data-id="${m.id}" title="${m.yer==='yayinlanan'?'Yayınlanan Modlar':'Release'} klasörünü aç">📦 ${m.yer==='yayinlanan'?'Yayınlanan':'Release'}</button>`);
+    if(m.kaynakVar)b.push(`<button data-a="ackay" data-id="${m.id}" title="Mod kaynak klasörünü aç">📁 Mod</button>`);
+    if(a.yayinlandi)b.push(`<button data-a="yayin" data-id="${m.id}" class="pri">Yayınlandı</button>`);
+    const nx=m.nexus&&m.nexus.id?`<a href="${esc(m.nexus.url)}" target="_blank" title="${esc(m.nexus.baslik)}">#${m.nexus.id}</a>`:'<span class="muted">-</span>';
+    const zip=m.zip?`<span title="${esc(m.zip)}">${tt(m.zipZamani)}</span><br><small class="muted">${m.yer==='yayinlanan'?'Yayınlanan':'Release'}</small>`:'<span class="muted">yok</span>';
+    let row=`<tr class="row ${m.toplu?'':'off'}"><td class="chk"><input type="checkbox" data-toplu="${esc(m.id)}" ${m.toplu?'checked':''} ${m.yayinlanmayacak?'disabled':''} title="Toplu derle / paketle'ye dahil"></td><td class="name" data-open="${m.id}">${esc(m.ad)}${m.ad!==m.id?`<small>${esc(m.id)}</small>`:''}</td>
+      <td>${esc(m.surum||'-')}</td>
+      <td><span class="pill s-${m.durum}">${ST[m.durum]}</span>${m.guncellendi?`<span class="upd" title="Yayından sonra değişti">güncellendi · yayında ${esc(m.yayindakiSurum)}</span>`:''}</td>
+      <td class="hide-s depc" title="${esc(depTitle(m))}">${depChips(m)||'<span class="muted">-</span>'}</td><td class="hide-s zipc">${zip}</td><td class="hide-s">${nx}</td>
+      <td><div class="acts">${b.join('')}</div></td>
+      <td class="hide-s note" data-note="${m.id}" title="Notu düzenle">${esc(m.not)||'<span style="opacity:.4">+ not</span>'}</td></tr>`;
+    if(open.has(m.id))row+=`<tr class="detail"><td colspan="9" id="d-${esc(m.id)}">yükleniyor...</td></tr>`;
+    return row}).join('')||'<tr><td colspan="9" class="muted">Bu filtrede mod yok.</td></tr>';
+  for(const id of open)detail(id);
+}
+async function detail(id){
+  const el=document.getElementById('d-'+id);if(!el)return;
+  try{const d=(await api('durum',{id})).sonuc,s=d.adimlar||{};
+    const step=(k,l)=>s[k]?`<b>${l}:</b> ${tt(s[k].zaman)} ${s[k].surum||''} (${s[k].kim||'?'})${s[k].basarili===false?' <span style="color:var(--r)">HATA</span>':''}${s[k].ozet===d.ozet?' ✓ güncel':' · <span style="color:var(--accent)">eskimiş</span>'}`:`<b>${l}:</b> -`;
+    el.innerHTML=`${['derleme','test','paket','yayin'].map((k,i)=>step(k,['Derleme','Çalışıyor','Paket','Yayın'][i])).join(' &nbsp; ')}
+      <br><b>Kaynak değişikliği:</b> ${tt(d.kaynakZamani)} · ${d.girdiSayisi} dosya · özet ${d.ozet||'-'}
+      <br><b>Girdiler:</b> ${esc((d.girdiler||[]).join(', ')||'(zip dosyaları)')}${d.haric&&d.haric.length?' · <b>hariç:</b> '+esc(d.haric.join(', ')):''}
+      <br><b>Gereksinimler</b> ${d.gereksinimElle?'(elle girildi)':'(README dosyasından)'}: ${(d.gereksinimler||[]).map(g=>`${DT[g.tur]}: ${esc(g.ad)}${g.min?' ≥'+esc(g.min):''}${g.sorun?' <span style="color:var(--accent)">⚠ '+esc(g.sorun)+'</span>':''}`).join(' · ')||'-'}
+      <br><b>Buna ihtiyaç duyanlar:</b> ${(d.bagimlilar||[]).filter(b=>b.tur!=='cakisir').map(b=>esc(b.ad)+(b.tur==='onerilen'?' (önerilen)':'')).join(', ')||'-'}${(d.bagimlilar||[]).some(b=>b.tur==='cakisir')?' · <b>birlikte olmaz:</b> '+d.bagimlilar.filter(b=>b.tur==='cakisir').map(b=>esc(b.ad)).join(', '):''}
+      <br><b>Release klasörü:</b> ${esc(d.release)} · <b>paket betiği:</b> ${esc(d.paket||'-')}
+      ${d.sonHata?`<pre style="color:var(--r)">${esc(d.sonHata)}</pre>`:''}
+      <div class="acts" style="margin-top:6px">${d.paket?`<button data-a="zorla" data-id="${esc(id)}">Yine de paketle</button>`:''}
+      <button data-a="skip" data-id="${esc(id)}">${d.yayinlanmayacak?'Yayınlanmayacak işaretini kaldır':'Yayınlanmayacak'}</button>
+      <button data-a="ad" data-id="${esc(id)}">Adı değiştir</button>
+      <button data-a="dep" data-id="${esc(id)}">Gereksinimleri düzenle</button>${d.gereksinimElle?`<button data-a="depreset" data-id="${esc(id)}">README'den al</button>`:''}</div>`;
+  }catch(e){el.textContent=e.message}
+}
+async function act(a,id){
+  const m=mods.find(x=>x.id===id);
+  try{
+    if(a==='derle')return job('derle',{ids:[id]});
+    if(a==='paketle')return job('paketle',{ids:[id]});
+    if(a==='zorla'){if(confirm(id+' değişmemiş olsa da yeniden paketlensin mi?'))return job('paketle',{ids:[id],zorla:true});return}
+    if(a==='calisiyor'||a==='calismiyor'){await api(a,{ids:[id]});toast(id+(a==='calisiyor'?': Çalışıyor ✓':': işaret kaldırıldı'))}
+    if(a==='yayin'){$('#pubName').textContent=m.ad;$('#pubUrl').value=m.nexus?.url||'';$('#pubTitle').value=m.nexus?.baslik||m.ad;
+      $('#dPub').returnValue='';$('#dPub').showModal();await new Promise(r=>$('#dPub').addEventListener('close',r,{once:true}));
+      if($('#dPub').returnValue!=='ok')return;
+      const r=(await api('yayinlandi',{id,url:$('#pubUrl').value,baslik:$('#pubTitle').value})).sonuc;
+      toast(id+': yayında olarak işaretlendi'+(r.tasinan&&r.tasinan.length?' · '+r.tasinan.join(', '):''));if(r.uyari)toast(r.uyari,1)}
+    if(a==='skip'){const d=(await api('durum',{id})).sonuc;await api('yayinlanmayacak',{id,geri:d.yayinlanmayacak})}
+    if(a==='dep'){const d=(await api('durum',{id})).sonuc;const cur=(d.gereksinimler||[]).map(g=>(g.tur==='onerilen'?'?':g.tur==='cakisir'?'!':'')+g.id+(g.min?'>='+g.min:'')).join('; ');
+      const v=prompt(`Gereksinimler, noktalı virgülle:
+  ModMarket>=1.4.0  gerekli (en az sürüm isteğe bağlı)
+  ?ModSettings  önerilen
+  !PlayAsMint  birlikte olmaz
+Boş bırakırsan README'den okunur.`,cur);if(v==null)return;await api('gereksinim',{id,metin:v})}
+    if(a==='depreset'){await api('gereksinim',{id,metin:''})}
+    if(a==='acrel'||a==='ackay'){await api('ac',{id,hedef:a==='ackay'?'kaynak':'release'});return}
+    if(a==='ad'){const v=prompt('Görünen ad',m.ad);if(v==null)return;await api('ayar',{id,alan:'ad',deger:v})}
+    load();
+  }catch(e){toast(e.message,1)}
+}
+async function job(cmd,args){
+  try{await fetch('/api/run',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({cmd,args,by:'Mustafa'})}).then(r=>r.json()).then(r=>{if(r.hata)throw new Error(r.hata)})}catch(e){toast(e.message,1)}
+}
+let wasBusy=false;
+async function poll(){
+  try{const r=await fetch('/api/gunluk?since='+gseq).then(r=>r.json());
+    const box=$('#lines'),stick=box.scrollTop+box.clientHeight>=box.scrollHeight-20;
+    for(const x of r.satirlar){const d=document.createElement('div');d.textContent=new Date(x.t).toLocaleTimeString('tr-TR')+'  '+x.l;
+      if(/HATA|error|BASARISIZ/i.test(x.l)&&!/\b0 (Hata|Error|Uyar)/i.test(x.l))d.className='err';else if(/^(▶|■|=====)/.test(x.l))d.className='hd';else if(/TAMAM|hazır|derlendi|Çalışıyor/i.test(x.l))d.className='ok';box.append(d)}
+    while(box.children.length>1500)box.firstChild.remove();
+    if(stick)box.scrollTop=box.scrollHeight;
+    gseq=r.son;const busy=!!r.aktif;
+    $('#job').textContent=busy?`çalışıyor: ${r.aktif}${r.kuyruk.length?' · sırada '+r.kuyruk.length:''}`:'';
+    if(wasBusy&&!busy)load();
+    if(r.satirlar.some(x=>/^■ bitti|Listeler güncellendi|tasindi|taşındı/.test(x.l))&&!busy)load();
+    wasBusy=busy;
+  }catch{$('#job').textContent='sunucuya ulaşılamıyor (Baslat.bat açık mı?)'}
+  setTimeout(poll,1000);
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-f],[data-a],[data-open],[data-note]');if(!t)return;
+  if(t.dataset.f){filter=t.dataset.f;localSet('f',filter);render()}
+  else if(t.dataset.a)act(t.dataset.a,t.dataset.id);
+  else if(t.dataset.open){const id=t.dataset.open;open.has(id)?open.delete(id):open.add(id);render()}
+  else if(t.dataset.note){const id=t.dataset.note,m=mods.find(x=>x.id===id);const v=prompt(id+' notu (YAYINLANACAKLAR.md\'de görünür)',m.not||'');if(v!=null)api('not',{id,metin:v}).then(load).catch(x=>toast(x.message,1))}
+});
+$('#q').addEventListener('input',render);
+document.addEventListener('change',async e=>{const id=e.target.dataset&&e.target.dataset.toplu;if(!id)return;try{await api('toplu',{ids:[id],dahil:e.target.checked});const m=mods.find(x=>x.id===id);if(m)m.toplu=e.target.checked;render()}catch(x){toast(x.message,1)}});
+$('#refresh').onclick=load;
+$('#clr').onclick=()=>$('#lines').innerHTML='';
+$('#bulkBuild').onclick=()=>{const n=mods.filter(m=>m.toplu&&m.yapilabilir.derle).length;confirm(`İşaretli ${n} mod derlensin mi?`)&&job('derle',{tumu:true})};
+$('#bulkPack').onclick=()=>{const n=mods.filter(m=>m.toplu&&m.yapilabilir.paketle).length;if(!n)return toast('Paketlenecek mod yok: işaretli modlar ya değişmemiş ya da Çalışıyor ✓ bekliyor.');confirm(`İşaretli ve paketlenmeye hazır ${n} mod paketlensin mi? Değişmeyenler atlanır.`)&&job('paketle',{tumu:true})};
+$('#add').onclick=async()=>{
+  try{const list=(await api('eklenmemis')).sonuc;
+    $('#addDir').innerHTML='<option value="">(seç)</option>'+list.map(x=>`<option>${esc(x)}</option>`).join('');
+    $('#addPkg').value=$('#addName').value=$('#addNote').value='';
+    $('#dAdd').returnValue='';$('#dAdd').showModal();await new Promise(r=>$('#dAdd').addEventListener('close',r,{once:true}));
+    if($('#dAdd').returnValue!=='ok')return;
+    const dir=$('#addDir').value,pkg=$('#addPkg').value.trim();if(!dir&&!pkg)return toast('Klasör seçilmedi',1);
+    const args={klasor:dir||pkg};if(!dir)args.tur='paket';if($('#addName').value.trim())args.ad=$('#addName').value.trim();if($('#addNote').value.trim())args.not=$('#addNote').value.trim();
+    await api('ekle',args);toast((dir||pkg)+' listeye eklendi');load();
+  }catch(e){toast(e.message,1)}
+};
+load();poll();setInterval(()=>{if(!document.hidden&&!wasBusy)load()},60000);
+</script>
+</body>
+</html>

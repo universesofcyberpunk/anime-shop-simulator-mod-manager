@@ -1,0 +1,12 @@
+{
+  "modDev": "..\..",
+  "gameDir": "..\..\..",
+  "filesFolder": "Files",
+  "releaseFolder": "Release",
+  "publishedFolder": "Yayınlanan Modlar",
+  "gameExe": "Anime Shop Simulator.exe",
+  "nexusGame": "animeshopsimulator",
+  "author": "Fabianens",
+  "nexusProfile": "https://www.nexusmods.com/profile/Fabianens/mods?gameId=10172",
+  "port": 5170
+}
